@@ -22,12 +22,6 @@ import pytest
 class TestInputParser:
     """app/input_parser.py — 경계 입력 검증"""
 
-    @pytest.fixture
-    def registry(self):
-        from unit_converter.domain.unit_registry import UnitRegistry
-
-        return UnitRegistry()
-
     def test_a02_rejects_missing_colon(self, registry):
         from unit_converter.app.input_parser import InputFormatError, parse_and_validate
 
@@ -126,14 +120,7 @@ class TestRegistrationParser:
 class TestConfigLoader:
     """infrastructure/config_loader.py — FR-06 (Activity 4)"""
 
-    def test_a11_loads_units_from_json_config(self):
-        from pathlib import Path
-
-        from unit_converter.domain.converter import Converter
-        from unit_converter.infrastructure.config_loader import load_registry
-
-        registry = load_registry(Path("config/units.json"))
-        converter = Converter(registry)
+    def test_a11_loads_units_from_json_config(self, registry, converter):
         result = converter.convert("meter", 2.5)
         assert registry.lookup("meter").name == "meter"
         assert registry.lookup("feet").name == "feet"

@@ -12,6 +12,10 @@ class RegistrationFormatError(Exception):
     pass
 
 
+def is_registration_input(input_str: str) -> bool:
+    return _REGISTRATION_PATTERN.match(input_str.strip()) is not None
+
+
 def parse_registration(input_str: str) -> MetersPerUnitLengthUnit:
     match = _REGISTRATION_PATTERN.match(input_str.strip())
     if not match:
