@@ -86,13 +86,28 @@ class TestCliBoundary:
 class TestOutputFormatter:
     """app/output_formatter.py — FR-07 (Activity 4)"""
 
-    def test_a08_json_format_flag(self, capsys):
-        # Given: --format json → JSON 구조 출력
-        pytest.fail("RED: app/output_formatter.py — JSON 포맷 미구현 (A-08)")
+    def test_a08_json_format_flag(self, capsys, monkeypatch):
+        import json
 
-    def test_a09_csv_format_flag(self, capsys):
-        # Given: --format csv → CSV 구조 출력
-        pytest.fail("RED: app/output_formatter.py — CSV 포맷 미구현 (A-09)")
+        from unit_converter.cli import main
+
+        monkeypatch.setattr("builtins.input", lambda _: "meter:2.5")
+        monkeypatch.setattr("sys.argv", ["unit_converter", "--format", "json"])
+        main()
+        out = capsys.readouterr().out.strip()
+        payload = json.loads(out)
+        assert payload["source"] == {"unit": "meter", "value": 2.5}
+        assert {"unit": "feet", "value": 8.2} in payload["conversions"]
+
+    def test_a09_csv_format_flag(self, capsys, monkeypatch):
+        from unit_converter.cli import main
+
+        monkeypatch.setattr("builtins.input", lambda _: "meter:2.5")
+        monkeypatch.setattr("sys.argv", ["unit_converter", "--format", "csv"])
+        main()
+        out = capsys.readouterr().out
+        assert "source_unit,source_value,target_unit,target_value" in out
+        assert "meter,2.5,feet,8.2" in out
 
 
 class TestRegistrationParser:

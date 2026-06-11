@@ -6,7 +6,7 @@ from unit_converter.app.input_parser import (
     NegativeValueError,
     parse_and_validate,
 )
-from unit_converter.app.output_formatter import format_table
+from unit_converter.app.output_formatter import format_csv, format_json, format_table
 from unit_converter.domain.converter import Converter
 from unit_converter.domain.exceptions import UnknownUnitError
 from unit_converter.domain.unit_registry import UnitRegistry
@@ -39,6 +39,10 @@ def run(input_str: str, *, output_format: str = "table") -> int:
 
     if output_format == "table":
         print(format_table(unit, value, results))
+    elif output_format == "json":
+        print(format_json(unit, value, results))
+    elif output_format == "csv":
+        print(format_csv(unit, value, results))
     else:
         _print_error(f"Unsupported format: {output_format}")
         return 1
