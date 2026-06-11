@@ -1,0 +1,42 @@
+---
+description: UnitConvertor_21 PRD·아키텍처·TDD·Mom Test 규칙
+alwaysApply: true
+---
+
+# UnitConvertor_21 프로젝트 규칙
+
+## SSOT
+
+- 요구사항·완료 기준: `docs/PRD.md`만 기준으로 한다.
+- TC 목록: `docs/test_cases.md` · 결함: `docs/defect_list.md`
+
+## 아키텍처 (OCP / SRP)
+
+```
+cli.py → app/ → domain/
+cli.py → infrastructure/ → domain/ → config/units.json
+```
+
+- 새 단위 추가 시 `converter.py` 수정 금지 — `UnitRegistry` + `config/units.json` 또는 동적 등록
+- 레이어 책임: Parser(`app/`) · Registry/Converter(`domain/`) · Config(`infrastructure/`) · CLI 조립(`cli.py`)
+
+## TDD
+
+- Track B: `tests/test_converter.py` (도메인)
+- Track A: `tests/test_cli.py` (경계/CLI)
+- Golden Master: `tests/test_golden_master.py` (레거시 동작 보존)
+- GUI smoke: `tests/test_gui_smoke.py`
+- TC 추가 시 `docs/test_cases.md`에 TC-MS-ID 정의 후 구현
+
+## Mom Test 체크포인트
+
+| 시점 | 판단 |
+|------|------|
+| RED 전 / domain 내부만 변경 | SKIP |
+| CLI·에러·출력 UX 최초/대폭 변경 | YES — 비개발자 10~15분 |
+| 4단계(포맷·등록) 완료 후 | YES |
+
+## 세션 Export
+
+- 종료 시 `/export` — `Report/NN_*.md` + `Prompting/NN_*.md` (동일 NN)
+- 기본적으로 git commit 하지 않음 (사용자 요청 시만)

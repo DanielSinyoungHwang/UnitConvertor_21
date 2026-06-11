@@ -14,6 +14,10 @@ Track A — Boundary / CLI (Dual-Track)
 | A-09| --format csv 출력                     | cli.py + output_formatter | FR-07         |
 | A-10| 동적 단위 등록 후 변환                | app/registration_parser.py| FR-05         |
 | A-11| units.json 설정 로드                  | infrastructure/config_loader | FR-06      |
+| A-12| 잘못된 등록 형식 거부                 | app/registration_parser.py   | FR-05      |
+| A-13| 미지원 --format 거부                  | cli.py                       | FR-07      |
+| A-14| units.yaml 설정 로드                  | infrastructure/config_loader | FR-06      |
+| A-15| 등록 유사 잘못된 입력 거부            | cli.py + registration_parser | FR-05      |
 """
 
 import pytest
@@ -116,6 +120,45 @@ class TestRegistrationParser:
         out = capsys.readouterr().out
         assert "1.0 cubit = 0.5 meter" in out
 
+    def test_a12_rejects_invalid_registration_format(self):
+        from unit_converter.app.registration_parser import (
+            RegistrationFormatError,
+            parse_registration,
+        )
+
+        with pytest.raises(RegistrationFormatError, match="Invalid registration format"):
+            parse_registration("cubit = 1 meter")
+
+        with pytest.raises(RegistrationFormatError):
+            parse_registration("1 cubit = 0.4572 meters")
+
+
+class TestCliFormatErrors:
+    """cli.py — 출력 포맷 경계"""
+
+    def test_a13_rejects_unsupported_format(self, capsys):
+        from unit_converter.cli import run
+
+        exit_code = run("meter:2.5", output_format="xml")
+        out = capsys.readouterr().out
+        assert exit_code == 1
+        assert "Unsupported format: xml" in out
+        assert "Supported: csv, json, table" in out
+
+
+class TestRegistrationLikeInput:
+    """등록 형식과 유사한 잘못된 입력 — UX-003"""
+
+    def test_a15_cli_rejects_registration_like_input(self, capsys, monkeypatch):
+        from unit_converter.cli import main
+
+        monkeypatch.setattr("builtins.input", lambda _: "cubit = 1 meter")
+        exit_code = main()
+        out = capsys.readouterr().out
+        assert exit_code == 1
+        assert "Invalid registration format" in out
+        assert "unit:value" not in out
+
 
 class TestConfigLoader:
     """infrastructure/config_loader.py — FR-06 (Activity 4)"""
@@ -125,5 +168,18 @@ class TestConfigLoader:
         assert registry.lookup("meter").name == "meter"
         assert registry.lookup("feet").name == "feet"
         assert registry.lookup("yard").name == "yard"
+        assert result["feet"] == 8.2
+        assert result["yard"] == 2.7
+
+    def test_a14_loads_units_from_yaml_config(self):
+        from pathlib import Path
+
+        from unit_converter.domain.converter import Converter
+        from unit_converter.infrastructure.config_loader import load_registry
+
+        yaml_path = Path("config/units.yaml")
+        registry = load_registry(yaml_path)
+        converter = Converter(registry)
+        result = converter.convert("meter", 2.5)
         assert result["feet"] == 8.2
         assert result["yard"] == 2.7
