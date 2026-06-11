@@ -22,25 +22,43 @@ import pytest
 class TestInputParser:
     """app/input_parser.py — 경계 입력 검증"""
 
-    def test_a02_rejects_missing_colon(self):
-        # Given: "meter2.5" → 형식 오류
-        pytest.fail("RED: app/input_parser.py — 콜론 없는 형식 검증 미구현 (A-02)")
+    @pytest.fixture
+    def registry(self):
+        from unit_converter.domain.unit_registry import UnitRegistry
 
-    def test_a03_rejects_invalid_number(self):
-        # Given: "meter:abc" → 숫자 오류
-        pytest.fail("RED: app/input_parser.py — 잘못된 숫자 검증 미구현 (A-03)")
+        return UnitRegistry()
 
-    def test_a04_rejects_negative_value(self):
-        # Given: "meter:-2.5" → 음수 거부
-        pytest.fail("RED: app/input_parser.py — 음수 검증 미구현 (A-04)")
+    def test_a02_rejects_missing_colon(self, registry):
+        from unit_converter.app.input_parser import InputFormatError, parse_and_validate
 
-    def test_a05_rejects_unknown_unit(self):
-        # Given: "cubit:1.0" (미등록) → 단위 오류
-        pytest.fail("RED: app/input_parser.py — 미지원 단위 검증 미구현 (A-05)")
+        with pytest.raises(InputFormatError):
+            parse_and_validate("meter2.5", registry)
 
-    def test_a06_trims_whitespace_around_input(self):
-        # Given: " meter:2.5 " → 정상 파싱
-        pytest.fail("RED: app/input_parser.py — 공백 trim 미구현 (A-06)")
+    def test_a03_rejects_invalid_number(self, registry):
+        from unit_converter.app.input_parser import InvalidNumberError, parse_and_validate
+
+        with pytest.raises(InvalidNumberError):
+            parse_and_validate("meter:abc", registry)
+
+    def test_a04_rejects_negative_value(self, registry):
+        from unit_converter.app.input_parser import NegativeValueError, parse_and_validate
+
+        with pytest.raises(NegativeValueError):
+            parse_and_validate("meter:-2.5", registry)
+
+    def test_a05_rejects_unknown_unit(self, registry):
+        from unit_converter.domain.exceptions import UnknownUnitError
+        from unit_converter.app.input_parser import parse_and_validate
+
+        with pytest.raises(UnknownUnitError):
+            parse_and_validate("cubit:1.0", registry)
+
+    def test_a06_trims_whitespace_around_input(self, registry):
+        from unit_converter.app.input_parser import parse_and_validate
+
+        unit, value = parse_and_validate(" meter:2.5 ", registry)
+        assert unit == "meter"
+        assert value == 2.5
 
 
 class TestCliBoundary:
