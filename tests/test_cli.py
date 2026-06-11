@@ -113,9 +113,14 @@ class TestOutputFormatter:
 class TestRegistrationParser:
     """app/registration_parser.py — FR-05 (Activity 4)"""
 
-    def test_a10_dynamic_unit_registration(self, capsys):
-        # Given: "1 cubit = 0.4572 meter" 등록 후 cubit:1 변환 가능
-        pytest.fail("RED: app/registration_parser.py — 동적 단위 등록 미구현 (A-10)")
+    def test_a10_dynamic_unit_registration(self, capsys, monkeypatch):
+        from unit_converter.cli import main
+
+        inputs = iter(["1 cubit = 0.4572 meter", "cubit:1"])
+        monkeypatch.setattr("builtins.input", lambda _: next(inputs))
+        main()
+        out = capsys.readouterr().out
+        assert "1.0 cubit = 0.5 meter" in out
 
 
 class TestConfigLoader:

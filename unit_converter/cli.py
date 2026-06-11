@@ -6,6 +6,7 @@ from unit_converter.app.input_parser import (
     NegativeValueError,
     parse_and_validate,
 )
+from unit_converter.app.registration_parser import RegistrationFormatError, parse_registration
 from unit_converter.app.output_formatter import format_csv, format_json, format_table
 from unit_converter.domain.converter import Converter
 from unit_converter.domain.exceptions import UnknownUnitError
@@ -16,8 +17,8 @@ def _print_error(message: str) -> None:
     print(message)
 
 
-def run(input_str: str, *, output_format: str = "table") -> int:
-    registry = UnitRegistry()
+def run(input_str: str, *, output_format: str = "table", registry: UnitRegistry | None = None) -> int:
+    registry = registry or UnitRegistry()
     converter = Converter(registry)
 
     try:
@@ -58,5 +59,14 @@ def main(argv: list[str] | None = None) -> int:
         output_format = args[index + 1]
         del args[index : index + 2]
 
-    input_str = input("Insert value for converting (ex: meter:2.5): ")
-    return run(input_str, output_format=output_format)
+    registry = UnitRegistry()
+    first_input = input("Insert value for converting (ex: meter:2.5): ").strip()
+    if "=" in first_input and first_input.lower().endswith("meter"):
+        try:
+            registry.register(parse_registration(first_input))
+        except RegistrationFormatError as exc:
+            _print_error(str(exc))
+            return 1
+        first_input = input("Insert value for converting (ex: meter:2.5): ")
+
+    return run(first_input, output_format=output_format, registry=registry)
