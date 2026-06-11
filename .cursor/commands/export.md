@@ -4,28 +4,30 @@
 
 | 산출물 | 경로 | 설명 |
 |--------|------|------|
-| 작업 보고서 | `Report/NN.md` | 세션 목표·산출물·결정·검증·다음 액션 요약 |
-| 프롬프트 이력 | `Prompting/NN.md` | Turn 단위 대화·명령·결과 Transcript Export |
+| 작업 보고서 | `Report/NN_세션제목.md` | 세션 목표·산출물·결정·검증·다음 액션 요약 |
+| 프롬프트 이력 | `Prompting/NN_세션제목.md` | Turn 단위 대화·명령·결과 Transcript Export |
 
 ---
 
 ## 파일명 규칙
 
 ```
-Report/NN.md
-Prompting/NN.md
+Report/NN_세션제목.md
+Prompting/NN_세션제목.md
 ```
 
 | 항목 | 규칙 |
 |------|------|
 | `NN` | 2자리 순번 (`01`, `02`, …). `Report/`·`Prompting/` 각각 기존 최대값 +1 |
-| 번호 일치 | 동일 Export 실행에서 Report와 Prompting은 **같은 NN** 사용 |
+| `세션제목` | 세션 주제 요약 (한글·영문, 공백 없이 `-` 연결 권장) |
+| 번호 일치 | 동일 Export에서 Report와 Prompting은 **같은 NN·세션제목** 사용 |
+| 통합 | 동일 세션의 분할 Export가 있으면 **하나로 합쳐** 최신 NN으로 저장 |
 | 폴더 | 없으면 `Report/`, `Prompting/` 생성 |
 
 **예시**
 
-- `Report/01.md`
-- `Prompting/01.md`
+- `Report/01_레거시분석-아키텍처-Plan수립.md`
+- `Prompting/01_레거시분석-아키텍처-Plan수립.md`
 
 ---
 
@@ -33,13 +35,13 @@ Prompting/NN.md
 
 1. **NN 결정** — `Report/`·`Prompting/` 기존 `NN.md` 목록 확인 후 다음 번호 선택
 2. **세션 식별** — 주제·단계·상태(완료/진행 중) 확정
-3. **Report 작성** — `Report/NN.md` 생성 (아래 템플릿)
-4. **Transcript 작성** — 현재 채팅 전체를 Turn 단위로 `Prompting/NN.md`에 기록
+3. **Report 작성** — `Report/NN_세션제목.md` 생성 (아래 템플릿)
+4. **Transcript 작성** — 현재 채팅 전체를 Turn 단위로 `Prompting/NN_세션제목.md`에 기록
 5. **완료 보고** — 생성된 파일 경로 2개를 사용자에게 표로 안내
 
 ---
 
-## Report 템플릿 (`Report/NN.md`)
+## Report 템플릿 (`Report/NN_세션제목.md`)
 
 ```markdown
 # UnitConvertor_21 — <주제> 보고서
@@ -75,12 +77,12 @@ Prompting/NN.md
 
 ## 7. 관련 문서
 
-- `Prompting/NN.md`
+- `Prompting/NN_세션제목.md`
 ```
 
 ---
 
-## Transcript 템플릿 (`Prompting/NN.md`)
+## Transcript 템플릿 (`Prompting/NN_세션제목.md`)
 
 ```markdown
 # Export Transcript — UnitConvertor_21 <주제>
@@ -117,7 +119,7 @@ Prompting/NN.md
 완료: ...
 진행 중: ...
 다음: ...
-참고: Report/NN.md
+참고: Report/NN_세션제목.md
 ```
 ```
 
@@ -134,7 +136,7 @@ Prompting/NN.md
 
 ## 체크리스트
 
-- [ ] `Report/NN.md`·`Prompting/NN.md` **동일 NN**
+- [ ] `Report/NN_세션제목.md`·`Prompting/NN_세션제목.md` **동일 NN·세션제목**
 - [ ] Report에 산출물 경로·검증 결과 반영
 - [ ] Transcript에 Turn 단위 대화·Session State·재개용 Context 포함
 - [ ] **git commit 하지 않음** (사용자 요청 시만)
