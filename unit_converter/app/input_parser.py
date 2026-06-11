@@ -17,14 +17,23 @@ class NegativeValueError(Exception):
 
 
 def parse_and_validate(input_str: str, registry: UnitRegistry) -> tuple[str, float]:
+    unit, value_str = _parse_input(input_str)
+    value = _validate_value(value_str)
+    _validate_unit(unit, registry)
+    return unit, value
+
+
+def _parse_input(input_str: str) -> tuple[str, str]:
     input_str = input_str.strip()
 
     if ":" not in input_str:
         raise InputFormatError("Invalid format. Use unit:value (ex: meter:2.5)")
 
     unit, value_str = input_str.split(":", 1)
-    unit = unit.strip()
+    return unit.strip(), value_str
 
+
+def _validate_value(value_str: str) -> float:
     try:
         value = float(value_str)
     except ValueError as exc:
@@ -33,9 +42,11 @@ def parse_and_validate(input_str: str, registry: UnitRegistry) -> tuple[str, flo
     if value < 0:
         raise NegativeValueError()
 
+    return value
+
+
+def _validate_unit(unit: str, registry: UnitRegistry) -> None:
     try:
         registry.lookup(unit)
     except UnknownUnitError:
         raise
-
-    return unit, value
