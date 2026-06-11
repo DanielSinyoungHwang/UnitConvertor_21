@@ -64,13 +64,23 @@ class TestInputParser:
 class TestCliBoundary:
     """cli.py — stdin/stdout 경계 (도메인·CLI 분리)"""
 
-    def test_a01_valid_input_produces_conversion_output(self, capsys):
-        # Given: stdin "meter:2.5" → stdout에 feet/yard 변환 줄 포함
-        pytest.fail("RED: cli.py — 정상 E2E 변환 출력 미구현 (A-01)")
+    def test_a01_valid_input_produces_conversion_output(self, capsys, monkeypatch):
+        from unit_converter.cli import main
 
-    def test_a07_default_table_format(self, capsys):
-        # Given: 기본 실행 → "2.5 meter = 8.2 feet" 형태 table 출력
-        pytest.fail("RED: app/output_formatter.py — table 포맷 미구현 (A-07)")
+        monkeypatch.setattr("builtins.input", lambda _: "meter:2.5")
+        main()
+        out = capsys.readouterr().out
+        assert "feet" in out
+        assert "yard" in out
+
+    def test_a07_default_table_format(self, capsys, monkeypatch):
+        from unit_converter.cli import main
+
+        monkeypatch.setattr("builtins.input", lambda _: "meter:2.5")
+        main()
+        out = capsys.readouterr().out
+        assert "2.5 meter = 8.2 feet" in out
+        assert "2.5 meter = 2.7 yard" in out
 
 
 class TestOutputFormatter:
