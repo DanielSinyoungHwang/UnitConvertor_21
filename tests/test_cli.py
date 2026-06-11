@@ -22,62 +22,108 @@ import pytest
 class TestInputParser:
     """app/input_parser.py — 경계 입력 검증"""
 
-    def test_a02_rejects_missing_colon(self):
-        # Given: "meter2.5" → 형식 오류
-        pytest.fail("RED: app/input_parser.py — 콜론 없는 형식 검증 미구현 (A-02)")
+    def test_a02_rejects_missing_colon(self, registry):
+        from unit_converter.app.input_parser import InputFormatError, parse_and_validate
 
-    def test_a03_rejects_invalid_number(self):
-        # Given: "meter:abc" → 숫자 오류
-        pytest.fail("RED: app/input_parser.py — 잘못된 숫자 검증 미구현 (A-03)")
+        with pytest.raises(InputFormatError):
+            parse_and_validate("meter2.5", registry)
 
-    def test_a04_rejects_negative_value(self):
-        # Given: "meter:-2.5" → 음수 거부
-        pytest.fail("RED: app/input_parser.py — 음수 검증 미구현 (A-04)")
+    def test_a03_rejects_invalid_number(self, registry):
+        from unit_converter.app.input_parser import InvalidNumberError, parse_and_validate
 
-    def test_a05_rejects_unknown_unit(self):
-        # Given: "cubit:1.0" (미등록) → 단위 오류
-        pytest.fail("RED: app/input_parser.py — 미지원 단위 검증 미구현 (A-05)")
+        with pytest.raises(InvalidNumberError):
+            parse_and_validate("meter:abc", registry)
 
-    def test_a06_trims_whitespace_around_input(self):
-        # Given: " meter:2.5 " → 정상 파싱
-        pytest.fail("RED: app/input_parser.py — 공백 trim 미구현 (A-06)")
+    def test_a04_rejects_negative_value(self, registry):
+        from unit_converter.app.input_parser import NegativeValueError, parse_and_validate
+
+        with pytest.raises(NegativeValueError):
+            parse_and_validate("meter:-2.5", registry)
+
+    def test_a05_rejects_unknown_unit(self, registry):
+        from unit_converter.domain.exceptions import UnknownUnitError
+        from unit_converter.app.input_parser import parse_and_validate
+
+        with pytest.raises(UnknownUnitError):
+            parse_and_validate("cubit:1.0", registry)
+
+    def test_a06_trims_whitespace_around_input(self, registry):
+        from unit_converter.app.input_parser import parse_and_validate
+
+        unit, value = parse_and_validate(" meter:2.5 ", registry)
+        assert unit == "meter"
+        assert value == 2.5
 
 
 class TestCliBoundary:
     """cli.py — stdin/stdout 경계 (도메인·CLI 분리)"""
 
-    def test_a01_valid_input_produces_conversion_output(self, capsys):
-        # Given: stdin "meter:2.5" → stdout에 feet/yard 변환 줄 포함
-        pytest.fail("RED: cli.py — 정상 E2E 변환 출력 미구현 (A-01)")
+    def test_a01_valid_input_produces_conversion_output(self, capsys, monkeypatch):
+        from unit_converter.cli import main
 
-    def test_a07_default_table_format(self, capsys):
-        # Given: 기본 실행 → "2.5 meter = 8.2 feet" 형태 table 출력
-        pytest.fail("RED: app/output_formatter.py — table 포맷 미구현 (A-07)")
+        monkeypatch.setattr("builtins.input", lambda _: "meter:2.5")
+        main()
+        out = capsys.readouterr().out
+        assert "feet" in out
+        assert "yard" in out
+
+    def test_a07_default_table_format(self, capsys, monkeypatch):
+        from unit_converter.cli import main
+
+        monkeypatch.setattr("builtins.input", lambda _: "meter:2.5")
+        main()
+        out = capsys.readouterr().out
+        assert "2.5 meter = 8.2 feet" in out
+        assert "2.5 meter = 2.7 yard" in out
 
 
 class TestOutputFormatter:
     """app/output_formatter.py — FR-07 (Activity 4)"""
 
-    def test_a08_json_format_flag(self, capsys):
-        # Given: --format json → JSON 구조 출력
-        pytest.fail("RED: app/output_formatter.py — JSON 포맷 미구현 (A-08)")
+    def test_a08_json_format_flag(self, capsys, monkeypatch):
+        import json
 
-    def test_a09_csv_format_flag(self, capsys):
-        # Given: --format csv → CSV 구조 출력
-        pytest.fail("RED: app/output_formatter.py — CSV 포맷 미구현 (A-09)")
+        from unit_converter.cli import main
+
+        monkeypatch.setattr("builtins.input", lambda _: "meter:2.5")
+        monkeypatch.setattr("sys.argv", ["unit_converter", "--format", "json"])
+        main()
+        out = capsys.readouterr().out.strip()
+        payload = json.loads(out)
+        assert payload["source"] == {"unit": "meter", "value": 2.5}
+        assert {"unit": "feet", "value": 8.2} in payload["conversions"]
+
+    def test_a09_csv_format_flag(self, capsys, monkeypatch):
+        from unit_converter.cli import main
+
+        monkeypatch.setattr("builtins.input", lambda _: "meter:2.5")
+        monkeypatch.setattr("sys.argv", ["unit_converter", "--format", "csv"])
+        main()
+        out = capsys.readouterr().out
+        assert "source_unit,source_value,target_unit,target_value" in out
+        assert "meter,2.5,feet,8.2" in out
 
 
 class TestRegistrationParser:
     """app/registration_parser.py — FR-05 (Activity 4)"""
 
-    def test_a10_dynamic_unit_registration(self, capsys):
-        # Given: "1 cubit = 0.4572 meter" 등록 후 cubit:1 변환 가능
-        pytest.fail("RED: app/registration_parser.py — 동적 단위 등록 미구현 (A-10)")
+    def test_a10_dynamic_unit_registration(self, capsys, monkeypatch):
+        from unit_converter.cli import main
+
+        inputs = iter(["1 cubit = 0.4572 meter", "cubit:1"])
+        monkeypatch.setattr("builtins.input", lambda _: next(inputs))
+        main()
+        out = capsys.readouterr().out
+        assert "1.0 cubit = 0.5 meter" in out
 
 
 class TestConfigLoader:
     """infrastructure/config_loader.py — FR-06 (Activity 4)"""
 
-    def test_a11_loads_units_from_json_config(self):
-        # Given: config/units.json → meter/feet/yard 비율 로드
-        pytest.fail("RED: infrastructure/config_loader.py — JSON 설정 로드 미구현 (A-11)")
+    def test_a11_loads_units_from_json_config(self, registry, converter):
+        result = converter.convert("meter", 2.5)
+        assert registry.lookup("meter").name == "meter"
+        assert registry.lookup("feet").name == "feet"
+        assert registry.lookup("yard").name == "yard"
+        assert result["feet"] == 8.2
+        assert result["yard"] == 2.7

@@ -21,54 +21,71 @@ import pytest
 class TestConverter:
     """domain/converter.py — meter 허브 변환 (I/O 무관)"""
 
-    def test_b01_meter_to_feet_rounded_one_decimal(self):
-        # Given: meter 2.5 → feet ≈ 8.2021 → 8.2 (README 기준 반올림)
-        pytest.fail("RED: domain/converter.py — meter→feet 변환 미구현 (B-01)")
+    def test_b01_meter_to_feet_rounded_one_decimal(self, converter):
+        result = converter.convert("meter", 2.5)
+        assert result["feet"] == 8.2
 
-    def test_b02_meter_to_yard_rounded_one_decimal(self):
-        # Given: meter 2.5 → yard ≈ 2.734 → 2.7
-        pytest.fail("RED: domain/converter.py — meter→yard 변환 미구현 (B-02)")
+    def test_b02_meter_to_yard_rounded_one_decimal(self, converter):
+        result = converter.convert("meter", 2.5)
+        assert result["yard"] == 2.7
 
-    def test_b03_feet_to_meter(self):
-        # Given: feet 8.2 → meter (meter 허브 역산)
-        pytest.fail("RED: domain/converter.py — feet→meter 변환 미구현 (B-03)")
+    def test_b03_feet_to_meter(self, converter):
+        result = converter.convert("feet", 8.2)
+        assert result["meter"] == 2.5
 
-    def test_b04_feet_to_yard_via_meter_hub(self):
-        # Given: feet 1.0 → yard (feet→meter→yard, if/elif 없음)
-        pytest.fail("RED: domain/converter.py — feet→yard 허브 변환 미구현 (B-04)")
+    def test_b04_feet_to_yard_via_meter_hub(self, converter):
+        result = converter.convert("feet", 1.0)
+        assert result["yard"] == 0.3
 
-    def test_b05_yard_to_feet_via_meter_hub(self):
-        # Given: yard 1.0 → feet (yard→meter→feet)
-        pytest.fail("RED: domain/converter.py — yard→feet 허브 변환 미구현 (B-05)")
+    def test_b05_yard_to_feet_via_meter_hub(self, converter):
+        result = converter.convert("yard", 1.0)
+        assert result["feet"] == 3.0
 
-    def test_b06_excludes_source_unit_from_results(self):
-        # Given: meter:2.5 입력 시 결과에 meter 자기 자신 미포함
-        pytest.fail("RED: domain/converter.py — 입력 단위 제외 로직 미구현 (B-06)")
+    def test_b06_excludes_source_unit_from_results(self, converter):
+        result = converter.convert("meter", 2.5)
+        assert "meter" not in result
+        assert set(result.keys()) == {"feet", "yard"}
 
 
 class TestUnitRegistry:
     """domain/unit_registry.py — OCP 핵심"""
 
-    def test_b07_registers_meter_feet_yard(self):
-        # Given: 기본 3단위 등록 후 lookup 성공
-        pytest.fail("RED: domain/unit_registry.py — 기본 단위 등록·조회 미구현 (B-07)")
+    def test_b07_registers_meter_feet_yard(self, registry):
+        assert registry.lookup("meter").name == "meter"
+        assert registry.lookup("feet").name == "feet"
+        assert registry.lookup("yard").name == "yard"
 
-    def test_b09_new_unit_without_modifying_converter(self):
-        # Given: cubit 등록 후 converter.py 수정 없이 변환 가능 (OCP)
-        pytest.fail("RED: domain/unit_registry.py + converter.py — OCP 확장 미구현 (B-09)")
+    def test_b09_new_unit_without_modifying_converter(self, registry):
+        from unit_converter.domain.converter import Converter
+        from unit_converter.domain.length_unit import MetersPerUnitLengthUnit
+
+        registry.register(MetersPerUnitLengthUnit("cubit", 0.4572))
+        converter = Converter(registry)
+        result = converter.convert("cubit", 1.0)
+        assert "meter" in result
+        assert result["meter"] == 0.5
 
 
 class TestDomainExceptions:
     """domain/exceptions.py"""
 
     def test_b08_raises_for_unknown_unit(self):
-        # Given: registry에 없는 단위 조회 시 도메인 예외
-        pytest.fail("RED: domain/exceptions.py — UnknownUnitError 미구현 (B-08)")
+        from unit_converter.domain.exceptions import UnknownUnitError
+        from unit_converter.domain.unit_registry import UnitRegistry
+
+        registry = UnitRegistry()
+        with pytest.raises(UnknownUnitError):
+            registry.lookup("cubit")
 
 
 class TestLengthUnitProtocol:
     """domain/length_unit.py — Protocol 계약"""
 
     def test_b10_length_unit_has_name_and_to_meter(self):
-        # Given: LengthUnit 구현체는 name, to_meter() 제공
-        pytest.fail("RED: domain/length_unit.py — LengthUnit Protocol 미구현 (B-10)")
+        from unit_converter.domain.length_unit import LengthUnit, MetersPerUnitLengthUnit
+
+        unit = MetersPerUnitLengthUnit("meter", 1.0)
+        assert unit.name == "meter"
+        assert unit.to_meter(2.5) == 2.5
+        assert unit.from_meter(2.5) == 2.5
+        assert isinstance(unit, LengthUnit)
