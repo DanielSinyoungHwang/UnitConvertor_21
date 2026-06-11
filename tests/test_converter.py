@@ -21,29 +21,37 @@ import pytest
 class TestConverter:
     """domain/converter.py — meter 허브 변환 (I/O 무관)"""
 
-    def test_b01_meter_to_feet_rounded_one_decimal(self):
-        # Given: meter 2.5 → feet ≈ 8.2021 → 8.2 (README 기준 반올림)
-        pytest.fail("RED: domain/converter.py — meter→feet 변환 미구현 (B-01)")
+    @pytest.fixture
+    def converter(self):
+        from unit_converter.domain.converter import Converter
+        from unit_converter.domain.unit_registry import UnitRegistry
 
-    def test_b02_meter_to_yard_rounded_one_decimal(self):
-        # Given: meter 2.5 → yard ≈ 2.734 → 2.7
-        pytest.fail("RED: domain/converter.py — meter→yard 변환 미구현 (B-02)")
+        return Converter(UnitRegistry())
 
-    def test_b03_feet_to_meter(self):
-        # Given: feet 8.2 → meter (meter 허브 역산)
-        pytest.fail("RED: domain/converter.py — feet→meter 변환 미구현 (B-03)")
+    def test_b01_meter_to_feet_rounded_one_decimal(self, converter):
+        result = converter.convert("meter", 2.5)
+        assert result["feet"] == 8.2
 
-    def test_b04_feet_to_yard_via_meter_hub(self):
-        # Given: feet 1.0 → yard (feet→meter→yard, if/elif 없음)
-        pytest.fail("RED: domain/converter.py — feet→yard 허브 변환 미구현 (B-04)")
+    def test_b02_meter_to_yard_rounded_one_decimal(self, converter):
+        result = converter.convert("meter", 2.5)
+        assert result["yard"] == 2.7
 
-    def test_b05_yard_to_feet_via_meter_hub(self):
-        # Given: yard 1.0 → feet (yard→meter→feet)
-        pytest.fail("RED: domain/converter.py — yard→feet 허브 변환 미구현 (B-05)")
+    def test_b03_feet_to_meter(self, converter):
+        result = converter.convert("feet", 8.2)
+        assert result["meter"] == 2.5
 
-    def test_b06_excludes_source_unit_from_results(self):
-        # Given: meter:2.5 입력 시 결과에 meter 자기 자신 미포함
-        pytest.fail("RED: domain/converter.py — 입력 단위 제외 로직 미구현 (B-06)")
+    def test_b04_feet_to_yard_via_meter_hub(self, converter):
+        result = converter.convert("feet", 1.0)
+        assert result["yard"] == 0.3
+
+    def test_b05_yard_to_feet_via_meter_hub(self, converter):
+        result = converter.convert("yard", 1.0)
+        assert result["feet"] == 3.0
+
+    def test_b06_excludes_source_unit_from_results(self, converter):
+        result = converter.convert("meter", 2.5)
+        assert "meter" not in result
+        assert set(result.keys()) == {"feet", "yard"}
 
 
 class TestUnitRegistry:
