@@ -127,5 +127,16 @@ class TestConfigLoader:
     """infrastructure/config_loader.py — FR-06 (Activity 4)"""
 
     def test_a11_loads_units_from_json_config(self):
-        # Given: config/units.json → meter/feet/yard 비율 로드
-        pytest.fail("RED: infrastructure/config_loader.py — JSON 설정 로드 미구현 (A-11)")
+        from pathlib import Path
+
+        from unit_converter.domain.converter import Converter
+        from unit_converter.infrastructure.config_loader import load_registry
+
+        registry = load_registry(Path("config/units.json"))
+        converter = Converter(registry)
+        result = converter.convert("meter", 2.5)
+        assert registry.lookup("meter").name == "meter"
+        assert registry.lookup("feet").name == "feet"
+        assert registry.lookup("yard").name == "yard"
+        assert result["feet"] == 8.2
+        assert result["yard"] == 2.7
