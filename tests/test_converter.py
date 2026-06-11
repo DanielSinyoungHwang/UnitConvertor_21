@@ -50,12 +50,24 @@ class TestUnitRegistry:
     """domain/unit_registry.py — OCP 핵심"""
 
     def test_b07_registers_meter_feet_yard(self):
-        # Given: 기본 3단위 등록 후 lookup 성공
-        pytest.fail("RED: domain/unit_registry.py — 기본 단위 등록·조회 미구현 (B-07)")
+        from unit_converter.domain.unit_registry import UnitRegistry
+
+        registry = UnitRegistry()
+        assert registry.lookup("meter").name == "meter"
+        assert registry.lookup("feet").name == "feet"
+        assert registry.lookup("yard").name == "yard"
 
     def test_b09_new_unit_without_modifying_converter(self):
-        # Given: cubit 등록 후 converter.py 수정 없이 변환 가능 (OCP)
-        pytest.fail("RED: domain/unit_registry.py + converter.py — OCP 확장 미구현 (B-09)")
+        from unit_converter.domain.converter import Converter
+        from unit_converter.domain.length_unit import MetersPerUnitLengthUnit
+        from unit_converter.domain.unit_registry import UnitRegistry
+
+        registry = UnitRegistry()
+        registry.register(MetersPerUnitLengthUnit("cubit", 0.4572))
+        converter = Converter(registry)
+        result = converter.convert("cubit", 1.0)
+        assert "meter" in result
+        assert result["meter"] == 0.5
 
 
 class TestDomainExceptions:
