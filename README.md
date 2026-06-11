@@ -17,12 +17,30 @@ venv\Scripts\activate
 # 가상환경 활성화 (macOS/Linux)
 source venv/bin/activate
 
-# 실행
+# 의존성 (테스트·YAML 설정)
+python -m pip install -r requirements-dev.txt
+
+# CLI 실행 (권장)
+python -m unit_converter
+
+# 출력 포맷 선택
+python -m unit_converter --format json
+python -m unit_converter --format csv
+
+# 레거시 thin wrapper (동일 동작)
 python UnitConverter.py
+
+# GUI (tkinter)
+python -m unit_converter.gui
+
+# 테스트
+python -m pytest -v
 
 # 가상환경 비활성화
 deactivate
 ```
+
+> 요구사항·완료 기준 SSOT: [`docs/PRD.md`](docs/PRD.md)
 
 ### 기본 요구사항
 1. 사용자 입력 예시:

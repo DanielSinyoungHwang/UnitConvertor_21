@@ -1,10 +1,11 @@
 # UnitConvertor_21 — 리팩터링 Plan
 
 **작성일:** 2026-06-11  
+**갱신:** 2026-06-11 (Activity 2~5 완료 반영)  
 **프로젝트:** UnitConvertor_21  
-**상태:** 1단계(분석) 완료 — 2단계 미착수  
-**PRD:** [README.md](../README.md)  
-**관련:** [Report/01.md](../Report/01.md) · [Prompting/01.md](../Prompting/01.md)
+**상태:** Activity 1~5 완료 · Mom Test · UX·YAML 보강 · pytest 36 passed  
+**PRD:** [docs/PRD.md](../docs/PRD.md)  
+**관련:** [Report/01](../Report/01_레거시분석-아키텍처-Plan수립.md) · [Report/08](../Report/08_Mom-Test-UX검증.md)
 
 ---
 
@@ -20,18 +21,37 @@
 
 ## 구현 Todo
 
-- [ ] **2단계 domain/** — `length_unit.py`, `unit_registry.py`, `converter.py`, `exceptions.py`
-- [ ] **2단계 app/cli** — `app/input_parser.py`, `cli.py`, `__main__.py` (FR-01~04, NFR-01~03)
-- [ ] **Mom Test 확인** — 2단계 완료 후 (§7)
-- [ ] **3단계 TC** — `tests/test_converter.py` (Track B), `tests/test_cli.py` (Track A)
-- [ ] **4단계 infra** — `infrastructure/config_loader.py`, `config/units.json` (FR-06)
-- [ ] **4단계 app 확장** — `registration_parser.py`, `output_formatter.py` (FR-05, FR-07)
-- [ ] **Mom Test 확인** — 4단계 완료 후 (§7)
-- [ ] **(선택)** `UnitConverter.py` → `cli.main()` thin wrapper
+- [x] **2단계 domain/** — `length_unit.py`, `unit_registry.py`, `converter.py`, `exceptions.py`
+- [x] **2단계 app/cli** — `app/input_parser.py`, `cli.py`, `__main__.py` (FR-01~04, NFR-01~03)
+- [x] **Mom Test 확인** — 2단계 완료 후 (§6) → [Report/08](../Report/08_Mom-Test-UX검증.md)
+- [x] **3단계 TC** — `tests/test_converter.py` (Track B), `tests/test_cli.py` (Track A)
+- [x] **4단계 infra** — `infrastructure/config_loader.py`, `config/units.json` (FR-06)
+- [x] **4단계 app 확장** — `registration_parser.py`, `output_formatter.py` (FR-05, FR-07)
+- [x] **Mom Test 확인** — 4단계 완료 후 (§6) → [Report/08](../Report/08_Mom-Test-UX검증.md)
+- [x] **(선택)** `UnitConverter.py` → `cli.main()` thin wrapper
+- [x] **(추가)** Golden Master 7건 · GUI · A-12/A-13 · GUI smoke test
 
 ---
 
-## 현재 상태 요약
+## 현재 상태 요약 (2026-06-11 갱신)
+
+Target Architecture 구현 완료. FR-01~07 · NFR-01~07 충족. `python -m pytest` **36 passed** (Track A 15 + B 10 + GM 7 + GUI smoke 4).
+
+| 항목 | 상태 |
+|------|------|
+| domain / app / infrastructure / cli | ✅ |
+| config/units.json | ✅ |
+| Golden Master | ✅ 7건 |
+| Mom Test | ✅ Report/08 |
+| UX 보강 | ✅ Report/09 (UX-001~004) |
+| YAML config | ✅ `config/units.yaml` |
+| GUI | ✅ `unit_converter/gui.py` + smoke test |
+
+> 아래 §1~§5는 **1단계 분석 당시 스냅샷**이다. 레거시 스멜·갭 분석 기록으로 유지한다.
+
+---
+
+## 현재 상태 요약 (1단계 분석 시점 — 아카이브)
 
 프로젝트는 **단일 스크립트 37줄**([UnitConverter.py](../UnitConverter.py))만 존재하며, 테스트·설정 파일·클래스 구조가 없습니다. README 요구 대비 **기본 변환만 동작**, 품질/추가 요구는 **대부분 미구현**.
 
@@ -255,26 +275,26 @@ sequenceDiagram
 
 ### Activity 2 — 기본+품질
 
-- [ ] `domain/length_unit.py`
-- [ ] `domain/unit_registry.py`
-- [ ] `domain/converter.py` (if/elif 없음)
-- [ ] `domain/exceptions.py`
-- [ ] `app/input_parser.py`
-- [ ] `cli.py` + `__main__.py`
-- [ ] Mom Test 진행 여부 확인
+- [x] `domain/length_unit.py`
+- [x] `domain/unit_registry.py`
+- [x] `domain/converter.py` (if/elif 없음)
+- [x] `domain/exceptions.py`
+- [x] `app/input_parser.py`
+- [x] `cli.py` + `__main__.py`
+- [x] Mom Test 진행 여부 확인 → Report/08
 
 ### Activity 3 — TC
 
-- [ ] `tests/test_converter.py` (Track B)
-- [ ] `tests/test_cli.py` (Track A)
+- [x] `tests/test_converter.py` (Track B)
+- [x] `tests/test_cli.py` (Track A)
 
 ### Activity 4 — 추가 요구
 
-- [ ] `config/units.json` + `infrastructure/config_loader.py`
-- [ ] `app/registration_parser.py`
-- [ ] `app/output_formatter.py` + `--format`
-- [ ] 추가 TC
-- [ ] Mom Test 진행 여부 확인
+- [x] `config/units.json` + `infrastructure/config_loader.py`
+- [x] `app/registration_parser.py`
+- [x] `app/output_formatter.py` + `--format`
+- [x] 추가 TC (A-12, A-13, GUI smoke)
+- [x] Mom Test 진행 여부 확인 → Report/08
 
 ---
 
@@ -300,4 +320,4 @@ sequenceDiagram
 | PRD 충족도 | 약 30% (변환 로직만) |
 | 제안 구조 | domain / app / infrastructure / cli |
 
-**다음:** §5 Activity 2 → Mom Test 확인 → Activity 3 → Activity 4 → Mom Test 확인
+**다음:** Activity 5 회고·발표 — (선택) UX-001~004 메시지 개선

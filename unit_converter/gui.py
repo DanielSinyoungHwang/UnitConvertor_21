@@ -1,3 +1,5 @@
+"""Tkinter 기반 단위 변환 GUI."""
+
 import tkinter as tk
 from tkinter import messagebox, ttk
 
@@ -18,7 +20,10 @@ from unit_converter.infrastructure.config_loader import load_registry
 
 
 class UnitConverterApp:
+    """단위 변환·등록·결과 표시를 담당하는 메인 GUI 애플리케이션."""
+
     def __init__(self, root: tk.Tk, registry: UnitRegistry | None = None) -> None:
+        """Tk 루트 윈도우와 레지스트리를 받아 UI와 Converter를 초기화한다."""
         self.root = root
         self.root.title("Unit Converter")
         self.root.geometry("520x480")
@@ -31,6 +36,7 @@ class UnitConverterApp:
         self._refresh_unit_list()
 
     def _build_ui(self) -> None:
+        """변환·등록·결과 패널과 위젯을 구성한다."""
         main = ttk.Frame(self.root, padding=12)
         main.pack(fill=tk.BOTH, expand=True)
 
@@ -89,16 +95,19 @@ class UnitConverterApp:
         ttk.Label(main, textvariable=self.status_var, foreground="#555").pack(anchor=tk.W, pady=(8, 0))
 
     def _refresh_unit_list(self) -> None:
+        """콤보박스 단위 목록을 레지스트리 기준으로 갱신한다."""
         names = sorted(unit.name for unit in self.registry.all_units())
         self.unit_combo["values"] = names
         if names and not self.unit_var.get():
             self.unit_var.set(names[0])
 
     def _clear_results(self) -> None:
+        """결과 Treeview의 모든 행을 제거한다."""
         for item in self.tree.get_children():
             self.tree.delete(item)
 
     def _show_results(self, source_unit: str, value: float) -> None:
+        """변환을 실행하고 결과를 Treeview와 상태바에 표시한다."""
         self._clear_results()
         results = self.converter.convert(source_unit, value)
         for unit, converted in results.items():
@@ -106,10 +115,12 @@ class UnitConverterApp:
         self.status_var.set(f"{value} {source_unit} → {len(results)}개 단위로 변환됨")
 
     def _handle_user_error(self, exc: Exception) -> None:
+        """입력 오류 시 결과를 비우고 상태바에 오류 메시지를 표시한다."""
         self._clear_results()
         self.status_var.set(str(exc))
 
     def _on_convert(self) -> None:
+        """값·단위 콤보박스 입력으로 변환 버튼 클릭을 처리한다."""
         unit = self.unit_var.get().strip()
         value_str = self.value_var.get().strip()
         input_str = f"{unit}:{value_str}"
@@ -126,6 +137,7 @@ class UnitConverterApp:
         self._show_results(parsed_unit, value)
 
     def _on_convert_raw(self) -> None:
+        """unit:value 원문 입력으로 변환 버튼 클릭을 처리한다."""
         input_str = self.raw_var.get().strip()
         try:
             unit, value = parse_and_validate(input_str, self.registry)
@@ -141,6 +153,7 @@ class UnitConverterApp:
         self._show_results(unit, value)
 
     def _on_register(self) -> None:
+        """단위 등록 입력을 파싱·등록하고 단위 목록을 갱신한다."""
         text = self.register_var.get().strip()
         if not text:
             messagebox.showwarning("등록", "등록할 단위 식을 입력하세요.")
@@ -158,6 +171,7 @@ class UnitConverterApp:
 
 
 def main() -> None:
+    """GUI 애플리케이션을 생성하고 이벤트 루프를 시작한다."""
     root = tk.Tk()
     UnitConverterApp(root)
     root.mainloop()
