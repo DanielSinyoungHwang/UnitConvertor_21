@@ -62,8 +62,12 @@ class TestDomainExceptions:
     """domain/exceptions.py"""
 
     def test_b08_raises_for_unknown_unit(self):
-        # Given: registry에 없는 단위 조회 시 도메인 예외
-        pytest.fail("RED: domain/exceptions.py — UnknownUnitError 미구현 (B-08)")
+        from unit_converter.domain.exceptions import UnknownUnitError
+        from unit_converter.domain.unit_registry import UnitRegistry
+
+        registry = UnitRegistry()
+        with pytest.raises(UnknownUnitError):
+            registry.lookup("cubit")
 
 
 class TestLengthUnitProtocol:
