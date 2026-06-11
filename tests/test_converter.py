@@ -70,5 +70,10 @@ class TestLengthUnitProtocol:
     """domain/length_unit.py — Protocol 계약"""
 
     def test_b10_length_unit_has_name_and_to_meter(self):
-        # Given: LengthUnit 구현체는 name, to_meter() 제공
-        pytest.fail("RED: domain/length_unit.py — LengthUnit Protocol 미구현 (B-10)")
+        from unit_converter.domain.length_unit import LengthUnit, MetersPerUnitLengthUnit
+
+        unit = MetersPerUnitLengthUnit("meter", 1.0)
+        assert unit.name == "meter"
+        assert unit.to_meter(2.5) == 2.5
+        assert unit.from_meter(2.5) == 2.5
+        assert isinstance(unit, LengthUnit)
